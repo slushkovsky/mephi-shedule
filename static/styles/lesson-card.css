@@ -1,0 +1,21 @@
+.lesson-card {
+  margin-bottom: 5%;
+  padding: 5% 3%;
+  width: 100%;
+  box-shadow: 0 0 5px rgba(0,0,0,0.6);
+  border: none;
+  outline-color: #2d3945;
+  outline-width: 1px;
+}
+@media (max-width: 991px) {
+  .lesson-card {
+    margin-bottom: 0;
+    box-shadow: 0 0 2px rgba(0,0,0,0.6);
+  }
+}
+.lesson-card[data-checked="true"] {
+  background-color: #fff;
+}
+.lesson-card[data-checked="false"] {
+  background-color: #ddd;
+}

@@ -6,44 +6,56 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
         
-    <link rel="stylesheet" href="../styles/core/bootstrap.min.css"> <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/core/bootstrap.min.css') }}"> <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic">
 
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
     <title>Shedule</title>
-    <link rel="stylesheet" href="../styles/index.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/index.css') }}">
 
     <template id="day-title-template">
-        <h1 class="day-title"></h1>
-        <hr>
+        <div class="day-title-container"> 
+            <h1 class="day-title"></h1>
+            <hr>
+        </div>
     </template>
 
     <template id="lesson-template">
-        <input type="checkbox"><span class="lesson-btime"></span> - <span class="lesson-etime"></span> <span class="lesson-name"></span> 
+        <button type="button" class="lesson-card" data-checked="true">
+            <span class="lesson-btime"></span> - <span class="lesson-etime"></span><br>
+            </span> <span class="lesson-name"></span> 
+        </button>
     </template>
 </head>
 
 <body>
     <div class="container">
         <header> 
-            <img id="mephi-logo" src="../img/mephi_logo.png">
-            <h2 id="title">Добавить расписание моего ПТУ</h2>
+            <img id="mephi-logo" src="{{ url_for('static', filename='img/mephi_logo.png') }}">
+            
+            <div class="hidden-xs">
+                <h2 id="title">Добавить расписание моего ПТУ</h2>
+            </div>
         </header>
 
         <section id="section-shedule">
-            <div class="row">
-                <div class="col-xs-2" data-day="Понедельник"> 
+            <div class="visible-lg-block visible-md-block hidden-sm hidden-xs">
+                <div class="row">
+                    <div class="col-sm-2" data-day="Понедельник"></div>
+                    <div class="col-sm-2" data-day="Вторник"></div>
+                    <div class="col-sm-2" data-day="Среда"></div>
+                    <div class="col-sm-2" data-day="Четверг"></div>
+                    <div class="col-sm-2" data-day="Пятница"></div>
+                    <div class="col-sm-2" data-day="Суббота"></div>
                 </div>
-                <div class="col-xs-2" data-day="Вторник">
-                </div>
-                <div class="col-xs-2" data-day="Среда"> 
-                </div>
-                <div class="col-xs-2" data-day="Четверг">
-                </div>
-                <div class="col-xs-2" data-day="Пятница">
-                </div>
-                <div class="col-xs-2" data-day="Суббота">
+            </div>
+            <div class="hidden-lg hidden-md visible-sm-block visible-xs-block">
+                <div class="subcontainer-days-xs">
+                    <div class="row" data-day="Понедельник"></div>
+                    <div class="row" data-day="Вторник"></div>
+                    <div class="row" data-day="Среда"></div>
+                    <div class="row" data-day="Четверг"></div>
+                    <div class="row" data-day="Пятница"></div>
+                    <div class="row" data-day="Суббота"></div>
                 </div>
             </div>
         </section>
@@ -52,45 +64,34 @@
     </div>
 
 <!-- Java Script -->
-    <script src="../js/core/jquery.js"></script> <!-- jQuery -->
-    <script src="../js/core/bootstrap.min.js"></script> <!--- Bootstrap -->
+    <script src="{{ url_for('static', filename='js/core/jquery.js') }}"></script> <!-- jQuery -->
+    <script src="{{ url_for('static', filename='js/core/bootstrap.min.js') }}"></script> <!--- Bootstrap -->
 
     <script>
-    var shedule = {
-        'Понедельник': [
-            {
-                'btime': '10:15', 
-                'etime': '12:30',
-                'name': 'Элтех'
-            }
-        ],
-        'Суббота': [
-            {
-                'btime': '16:00', 
-                'etime': '17:30',
-                'name': 'Элтех'
-            }
-        ]
-    };
-
     $('[data-day]').each(function() {
         var tmpl = document.getElementById('day-title-template').content.cloneNode(true);
         tmpl.querySelector('.day-title').innerHTML = $(this).attr('data-day'); 
         $(this).append(tmpl);
     });
 
-    for (var day_name in shedule) {
-        var lessons = shedule[day_name]; 
 
-        for (var i in lessons) {
+    {% for day_name, lessons in shedule.items() %}
+        {% for lesson in lessons %}
             var tmpl = document.getElementById('lesson-template').content.cloneNode(true);
 
-            for (var property_name in lessons[i]) 
-                tmpl.querySelector('.lesson-' + property_name).innerHTML = lessons[i][property_name];
+            {% for prop_name in ('btime', 'etime', 'name') %} 
+                tmpl.querySelector('.lesson-' + '{{ prop_name }}').innerHTML = '{{ lesson[prop_name] }}';
+                tmpl.querySelector('.lesson-card').style['top'] = 
+            {% endfor %}
 
-            $('[data-day=' + day_name + ']').append(tmpl);
-        }
-    }
+            $('[data-day=' + '{{ day_name }}' + ']').append(tmpl);
+        {% endfor %}
+    {% endfor %}
+
+    $('.lesson-card').click(function() {
+        console.log('click');
+        $(this).attr('data-checked', $(this).attr('data-checked') == 'true' ? 'false' : 'true')
+    });
 
     </script>
 

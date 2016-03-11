@@ -3,19 +3,14 @@ import shedule_maker
 
 app = Flask(__name__)
 
-app.route("/")
+@app.route("/")
 def interface():
-	shedule = shedule_maker.get_shedule()
+    shedule = shedule_maker.get_shedule()
 
-	by_days = {day_name: jsonify(shedule[day_name]) for day_name in ("Понедельник", "Вторинк", "Среда", "Четверг", "Пятница", "Суббота")}
-
-	print(by_days)
-
-
+    return render_template("index.html", shedule=shedule.week_even())
 
 if __name__ == "__main__": 
-	app.debug = True
+    app.debug = True
+    app.run()
 
-	app.run()
-
-	
+    

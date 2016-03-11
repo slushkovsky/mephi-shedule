@@ -1,18 +1,44 @@
 import urllib.request
 import lxml.html as html
 
-class Shedule(list): 
-	def __getitem__(self, key): 
-		for elem in super(): 
-			if elem.day == key: 
-				yield elem
+LESSON_ON_EVEN_WEEK = 0 
+LESSON_ON_NOT_EVEN_WEEK = 1
+LESSON_ON_BOTH_WEEKS = 2
+
+class Shedule(object):
+	def __init__(self): 
+		self.lessons = []
+
+	def append(self, lesson): 
+		self.lessons.append(lesson)
+
+	def week_even(self): 
+		return self.__dayly(LESSON_ON_EVEN_WEEK)
+
+	def week_not_even(self):
+		return self.__dayly(LESSON_ON_NOT_EVEN_WEEK)
+
+	def __dayly(self, week_type): 
+		if week_type not in (LESSON_ON_EVEN_WEEK, LESSON_ON_NOT_EVEN_WEEK): 
+			raise Exception("Unsupported week type")
+
+		dayly = {day_name: [] for day_name in ("Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота")} 
+
+		LESSON_PARAMS = ("btime", "etime", "name", "lesson_type", "place", "tutors")
+
+		for lesson in self.lessons: 
+			if lesson.square == LESSON_ON_BOTH_WEEKS or lesson.square == week_type: 
+				dayly[lesson.day].append({attr_name: getattr(lesson, attr_name) for attr_name in LESSON_PARAMS })
+
+		return dayly
+
 
 class Lesson(object): 
 	def __init__(self, square, day, time_range, name, lesson_type, place, tutors): 
 		self.square = {
-			"Еженедельно": "Ч/Н",
-			"Четная неделя": " Ч ",
-			"Нечетная неделя": " Н "
+			"Еженедельно": LESSON_ON_BOTH_WEEKS,
+			"Четная неделя": LESSON_ON_EVEN_WEEK,
+			"Нечетная неделя": LESSON_ON_NOT_EVEN_WEEK
 		}[square]
 
 		self.day = day 
@@ -25,7 +51,7 @@ class Lesson(object):
 
 	def __str__(self): 
 		return "{square} {day} {btime}-{etime} {place} {lesson_type} {name} {tutors}".format(
-			square     =self.square,
+			square     ="Ч/Н" if self.square == LESSON_ON_BOTH_WEEKS else " Ч " if self.square == LESSON_ON_EVEN_WEEK else " Н ",
 			day        =self.day, 
 			btime      =self.btime, 
 			etime      =self.etime, 
