@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+    <link rel="stylesheet" href="../styles/core/bootstrap.min.css"> <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic">
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <title>Shedule</title>
+    <link rel="stylesheet" href="../styles/index.css">
+
+    <template id="day-title-template">
+        <h1 class="day-title"></h1>
+        <hr>
+    </template>
+
+    <template id="lesson-template">
+        <input type="checkbox"><span class="lesson-btime"></span> - <span class="lesson-etime"></span> <span class="lesson-name"></span> 
+    </template>
+</head>
+
+<body>
+    <div class="container">
+        <header> 
+            <img id="mephi-logo" src="../img/mephi_logo.png">
+            <h2 id="title">Добавить расписание моего ПТУ</h2>
+        </header>
+
+        <section id="section-shedule">
+            <div class="row">
+                <div class="col-xs-2" data-day="Понедельник"> 
+                </div>
+                <div class="col-xs-2" data-day="Вторник">
+                </div>
+                <div class="col-xs-2" data-day="Среда"> 
+                </div>
+                <div class="col-xs-2" data-day="Четверг">
+                </div>
+                <div class="col-xs-2" data-day="Пятница">
+                </div>
+                <div class="col-xs-2" data-day="Суббота">
+                </div>
+            </div>
+        </section>
+
+        <button id="button-add" class="btn btn-success" type="button">Add to Google Calendar</button>
+    </div>
+
+<!-- Java Script -->
+    <script src="../js/core/jquery.js"></script> <!-- jQuery -->
+    <script src="../js/core/bootstrap.min.js"></script> <!--- Bootstrap -->
+
+    <script>
+    var shedule = {
+        'Понедельник': [
+            {
+                'btime': '10:15', 
+                'etime': '12:30',
+                'name': 'Элтех'
+            }
+        ],
+        'Суббота': [
+            {
+                'btime': '16:00', 
+                'etime': '17:30',
+                'name': 'Элтех'
+            }
+        ]
+    };
+
+    $('[data-day]').each(function() {
+        var tmpl = document.getElementById('day-title-template').content.cloneNode(true);
+        tmpl.querySelector('.day-title').innerHTML = $(this).attr('data-day'); 
+        $(this).append(tmpl);
+    });
+
+    for (var day_name in shedule) {
+        var lessons = shedule[day_name]; 
+
+        for (var i in lessons) {
+            var tmpl = document.getElementById('lesson-template').content.cloneNode(true);
+
+            for (var property_name in lessons[i]) 
+                tmpl.querySelector('.lesson-' + property_name).innerHTML = lessons[i][property_name];
+
+            $('[data-day=' + day_name + ']').append(tmpl);
+        }
+    }
+
+    </script>
+
+</body>
+</html>
