@@ -11,6 +11,7 @@
 
     <title>Shedule</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/index.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
 
     <template id="day-title-template">
         <div class="day-title-container"> 
@@ -67,6 +68,8 @@
     <script src="{{ url_for('static', filename='js/core/jquery.js') }}"></script> <!-- jQuery -->
     <script src="{{ url_for('static', filename='js/core/bootstrap.min.js') }}"></script> <!--- Bootstrap -->
 
+    <script src="https://apis.google.com/js/client.js"></script> <!-- Google API -->
+
     <script>
     $('[data-day]').each(function() {
         var tmpl = document.getElementById('day-title-template').content.cloneNode(true);
@@ -93,6 +96,59 @@
         $(this).attr('data-checked', $(this).attr('data-checked') == 'true' ? 'false' : 'true')
     });
 
+    var CLIENT_ID = '832518959652-jh5oi3v9nsu40ad3vptvl48kqj74dg1q.apps.googleusercontent.com';
+    var SCOPES = ["https://www.googleapis.com/auth/calendar"];
+
+    function checkAuth() {
+        gapi.auth.authorize({
+            'client_id': CLIENT_ID,
+            'scope': SCOPES.join(' '),
+            'immediate': true
+        }, handleAuthResult);
+    }
+
+    function handleAuthResult(authResult) {
+        if (authResult && !authResult.error) {
+            var event = {
+                'summary': 'Этлех',
+                'location': 'К-256',
+                'description': 'Архангельская',
+                'start': {
+                    'dateTime': '2016-03-12T10:15:00+03:00'
+                },
+                'end': {
+                    'dateTime': '2016-03-12T12:30:00+03:00'
+                },
+                'reminders': {
+                    'useDefault': false,
+                    'overrides': [
+                      {'method': 'popup', 'minutes': 0}
+                    ]
+                }
+            };
+
+            gapi.client.load('calendar', 'v3', function(){
+                var request = gapi.client.calendar.events.insert({
+                  'calendarId': 'primary',
+                  'resource': event
+                });
+
+                request.execute(function(jsonResp) {
+                  console.log(jsonResp);
+                });
+
+            });
+        }
+        else {
+            gapi.auth.authorize({
+                client_id: CLIENT_ID, 
+                scope: SCOPES, 
+                immediate: false
+            }, handleAuthResult);
+        }
+    }
+
+    $('#button-add').click(checkAuth);
     </script>
 
 </body>
