@@ -77,7 +77,6 @@
         $(this).append(tmpl);
     });
 
-
     {% for day_name, lessons in shedule.items() %}
         {% for lesson in lessons %}
             var tmpl = document.getElementById('lesson-template').content.cloneNode(true);
@@ -91,9 +90,56 @@
         {% endfor %}
     {% endfor %}
 
+    function getNextMondayDate() {
+      d = new Date();
+      var day = d.getDay(),
+          diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
+      return new Date(d.setDate(diff + 7));
+    }
+    
+    function format_lesson_datetime(day_name, time) {
+        var day_offset = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"].indexOf(day_name);
+        var next_mon_date = getNextMondayDate()
+
+        return next_mon_date.getFullYear() + '-' + (next_mon_date.getMonth() + 1) + '-' + (next_mon_date.getDate() + day_offset) + 'T' + time + ':00+03:00'
+    }
+
+    var lessons_events = []
+
+    {% for day_name, lessons in shedule.items() %}
+        {% for lesson in lessons %}
+            lessons_events.push({
+                'summary': '{{ lesson["name"] }} [{{ lesson["lesson_type"] }}]',
+                'location': '{{ lesson["place"] }}',
+                'description': 'Turors: {{ lesson["tutors"] }}',
+                'end': {
+                    'dateTime': format_lesson_datetime('{{ day_name }}', '{{ lesson["etime"] }}')
+                }, 
+                'start': {
+                    'dateTime': format_lesson_datetime('{{ day_name }}', '{{ lesson["btime"] }}')
+                },
+                'util_info': {
+                    'active': true,
+                    'day_name': '{{ day_name }}', 
+                    'btime': '{{ lesson["btime"] }}',
+                    'etime': '{{ lesson["etime"] }}'
+                }
+            })
+        {% endfor %}
+    {% endfor %}
+
+
     $('.lesson-card').click(function() {
-        console.log('click');
         $(this).attr('data-checked', $(this).attr('data-checked') == 'true' ? 'false' : 'true')
+
+        for (var i in lessons_events) {
+            var is_equal_btime = lessons_events[i]['util_info']['btime']    == $(this).find('.lesson-btime').html()
+            var is_equal_etime = lessons_events[i]['util_info']['etime']    == $(this).find('.lesson-etime').html()
+            var is_equal_day   = lessons_events[i]['util_info']['day_name'] == $(this).parent().attr('data-day')
+
+            if (is_equal_day && is_equal_btime && is_equal_etime)
+                lessons_events[i]['util_info']['active'] = !lessons_events[i]['util_info']['active']
+        }
     });
 
     var CLIENT_ID = '832518959652-jh5oi3v9nsu40ad3vptvl48kqj74dg1q.apps.googleusercontent.com';
@@ -109,37 +155,26 @@
 
     function handleAuthResult(authResult) {
         if (authResult && !authResult.error) {
-            var event = {
-                'summary': 'Этлех',
-                'location': 'К-256',
-                'description': 'Архангельская',
-                'start': {
-                    'dateTime': '2016-03-12T10:15:00+03:00'
-                },
-                'end': {
-                    'dateTime': '2016-03-12T12:30:00+03:00'
-                },
-                'reminders': {
-                    'useDefault': false,
-                    'overrides': [
-                      {'method': 'popup', 'minutes': 0}
-                    ]
-                }
-            };
-
             gapi.client.load('calendar', 'v3', function(){
-                var request = gapi.client.calendar.events.insert({
-                  'calendarId': 'primary',
-                  'resource': event
-                });
+                for (var i in lessons_events) {
+                    if (!lessons_events[i]['util_info']['active'])
+                        continue;
 
-                request.execute(function(jsonResp) {
-                  console.log(jsonResp);
-                });
+                    delete lessons_events[i]['util_info'];
 
+                    var request = gapi.client.calendar.events.insert({
+                        'calendarId': 'primary',
+                        'resource': lessons_events[i]
+                    });
+
+                    request.execute(function(response) {
+                        console.log(response);
+                    });
+                }
             });
         }
         else {
+            console.log('auth error');
             gapi.auth.authorize({
                 client_id: CLIENT_ID, 
                 scope: SCOPES, 

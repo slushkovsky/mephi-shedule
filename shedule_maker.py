@@ -45,9 +45,9 @@ class Lesson(object):
 		self.btime = time_range[0]
 		self.etime = time_range[1]
 		self.name = name 
-		self.lesson_type = lesson_type
+		self.lesson_type = ",".join(lesson_type)
 		self.place = place
-		self.tutors = tutors
+		self.tutors = ",".join(tutors)
 
 	def __str__(self): 
 		return "{square} {day} {btime}-{etime} {place} {lesson_type} {name} {tutors}".format(
